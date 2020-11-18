@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/tmmcguire/node-data-structure-diff/issues"
   },
-  "homepage": "https://github.com/tmmcguire/node-data-structure-diff#readme"
+  "homepage": "https://github.com/tmmcguire/node-data-structure-diff#readme",
+  "dependencies": {
+    "eslint": "^7.13.0"
+  }
 }
