@@ -1,0 +1,23 @@
+{
+  "name": "data-structure-diff",
+  "version": "0.9.0",
+  "description": "Diff (and patch) for arbitrary tree data structures",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tmmcguire/node-data-structure-diff.git"
+  },
+  "keywords": [
+    "diff",
+    "patch"
+  ],
+  "author": "Tommy M. McGuire <mcguire@crsr.net>",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/tmmcguire/node-data-structure-diff/issues"
+  },
+  "homepage": "https://github.com/tmmcguire/node-data-structure-diff#readme"
+}
