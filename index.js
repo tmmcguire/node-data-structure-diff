@@ -44,7 +44,7 @@ class Ins extends Diff {
   }
 
   patch(trees) {
-    return insert(this.label, this.arity, this.diff.patch(trees));
+    return ins(this.label, this.arity, this.diff.patch(trees));
   }
 }
 
@@ -68,7 +68,7 @@ class Cpy extends Diff {
   }
 
   patch(trees) {
-    return insert(this.label, this.arity, this.diff.patch(del(this.label, this.arity, trees)))
+    return ins(this.label, this.arity, this.diff.patch(del(this.label, this.arity, trees)))
   }
 }
 
@@ -184,7 +184,7 @@ function labelsMatch(l1, l2) {
   }
 }
 
-function insert(label, arity, trees) {
+function ins(label, arity, trees) {
   const ys = trees.slice(0, arity);
   if (ys.length === arity) {
     return [mkNode(label, ys)].concat(trees.slice(arity));
