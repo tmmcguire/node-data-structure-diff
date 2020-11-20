@@ -95,24 +95,21 @@ class End extends Diff {
 }
 // --------------------------
 
-const ARRAY = 'ARRAY';
-const OBJECT = 'OBJECT';
-
 function label(obj) {
   if (isPrimitive(obj)) {
     return [obj, []];
   } else if (isArray(obj)) {
-    return [ARRAY, obj];
+    return [[], obj];
   } else /* isObject(obj) */ {
     const entries = Object.entries(obj).sort((a, b) => a.localeCompare(b));
-    return [OBJECT, entries];
+    return [{}, entries];
   }
 }
 
 function triple(trees) {
-  const [hd, ...tl] = trees;
-  const [lbl, subtrees] = label(hd);
-  return [lbl, subtrees, tl];
+  const [head, ...tail] = trees;
+  const [l, subtrees] = label(head);
+  return [l, subtrees, tail];
 }
 
 // --------------------------
@@ -154,15 +151,36 @@ function diff(left, right) {
 
 // --------------------------
 
+function fromEntries(entries) {
+  if (Object.hasOwnProperty('fromEntries')) {
+    return Object.fromEntries(entries);
+  } else {
+    return entries.reduce((obj, [k,v]) => {
+      obj[k] = v;
+      return obj;
+    }, {});
+  }
+}
+
 function mkNode(label, children) {
-  if (label === 'ARRAY') {
+  if (isArray(label)) {
     return children;
-  } else if (label === 'CLASS') {
-    return Object.fromEntries(children);
+  } else if (isObject(label)) {
+    return fromEntries(children);
   } else if (children.length === 0) {
     return label;
   } else {
     throw new Error(`${label} cannot have ${children.length} children`);
+  }
+}
+
+function labelsMatch(l1, l2) {
+  if ((isArray(l1) && isArray(l2)) || (isObject(l1) && isObject(l2))) {
+    return true;
+  } else if (isPrimitive(l1) && isPrimitive(l2)) {
+    return l1 === l1 || (isNaN(l1) && isNaN(l2));
+  } else {
+    return false;
   }
 }
 
@@ -179,10 +197,10 @@ function del(lbl, arity, trees) {
   if (trees.length === 0) {
     throw new Error(`Expected ${arity} subtrees, found only ${trees.length}`);
   } else {
-    const [node, ...tss] = trees;
-    const [l, subtrees] = label(node);
-    if (lbl === l && arity === subtrees.length) {
-      return subtrees.concat(tss);
+    const [head, ...tail] = trees;
+    const [l, subtrees] = label(head);
+    if (labelsMatch(lbl, l) && arity === subtrees.length) {
+      return subtrees.concat(tail);
     } else {
       throw new Error(`${lbl} did not mach ${l} or ${arity} did not match ${subtrees.length}`);
     }
@@ -190,7 +208,7 @@ function del(lbl, arity, trees) {
 }
 
 function patch(diff, tree) {
-  return diff([tree])[0];
+  return diff.patch([tree])[0];
 }
 
 // --------------------------
