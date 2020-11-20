@@ -93,6 +93,7 @@ class End extends Diff {
     return 'end()'
   }
 }
+
 // --------------------------
 
 function label(obj) {
@@ -101,7 +102,9 @@ function label(obj) {
   } else if (isArray(obj)) {
     return [[], obj];
   } else /* isObject(obj) */ {
-    const entries = Object.entries(obj).sort((a, b) => a[0].localeCompare(b[0]));
+    const entries = Object.entries(obj).sort(
+      (a, b) => a[0].localeCompare(b[0])
+    );
     return [{}, entries];
   }
 }
@@ -120,33 +123,68 @@ function choose(p1, p2) {
 
 // --------------------------
 
-function diffR(ltrees, rtrees) {
+function diffRM(ltrees, rtrees, [lc, rc], m) {
+  // console.log(`${JSON.stringify([ltrees, rtrees])} -- (${lc},${rc})`);
   if (ltrees.length === 0 && rtrees.length === 0) {
     return new End();
   } else if (ltrees.length === 0) {
     const [y, ys, yss] = triple(rtrees);
-    return new Ins(y, ys.length, diffR([], ys.concat(yss)))
+    return new Ins(
+      y,
+      ys.length,
+      diffR([], ys.concat(yss), [lc, rc+1], m)
+    );
   } else if (rtrees.length === 0) {
     const [x, xs, xss] = triple(ltrees);
-    return new Del(x, xs.length, diffR(xs.concat(xss), []));
+    return new Del(
+      x,
+      xs.length,
+      diffR(xs.concat(xss), [], [lc+1, rc], m)
+    );
   } else {
     const [x, xs, xss] = triple(ltrees);
     const [y, ys, yss] = triple(rtrees);
-    const d1 = new Del(x, xs.length, diffR(xs.concat(xss), rtrees));
-    const d2 = new Ins(y, ys.length, diffR(ltrees, ys.concat(yss)));
+    const d1 = new Del(
+      x,
+      xs.length,
+      diffR(xs.concat(xss), rtrees, [lc+1, rc], m)
+    );
+    const d2 = new Ins(
+      y,
+      ys.length,
+      diffR(ltrees, ys.concat(yss), [lc, rc+1], m)
+    );
     const b2 = choose(d1, d2);
-    if (x === y && xs.length === ys.length) {
-      const d3 = new Cpy(x, xs.length, diffR(xs.concat(xss), ys.concat(yss)));
-      const b3 = choose(d3, b2);
-      return b3;
+    if (labelsMatch(x,y) && xs.length == ys.length) {
+      const d3 = new Cpy(
+        x,
+        xs.length,
+        diffR(xs.concat(xss), ys.concat(yss), [lc+1, rc+1], m)
+      );
+      return choose(d3, b2);
     } else {
       return b2
     }
   }
 }
 
-function diff(left, right) {
-  return diffR([left], [right]);
+function diffR(ltrees, rtrees, [lc,rc], memoized) {
+  if (memoized) {
+    const key = `${lc},${rc}`;
+    if (memoized.hasOwnProperty(key)) {
+      return memoized[key];
+    } else {
+      const value = diffRM(ltrees, rtrees, [lc,rc], memoized);
+      memoized[key] = value;
+      return value;
+    }
+  } else {
+    return diffRM(ltrees, rtrees, [lc,rc], memoized);
+  }
+}
+
+function diff(left, right, memoized=true) {
+  return diffR([left], [right], [0,0], memoized ? {} : null);
 }
 
 // --------------------------
@@ -170,7 +208,9 @@ function mkNode(label, children) {
   } else if (children.length === 0) {
     return label;
   } else {
-    throw new Error(`${label} cannot have ${children.length} children`);
+    throw new Error(
+      `${JSON.stringify(label)} cannot have ${children.length} children`
+    );
   }
 }
 
@@ -202,7 +242,9 @@ function del(lbl, arity, trees) {
     if (labelsMatch(lbl, l) && arity === subtrees.length) {
       return subtrees.concat(tail);
     } else {
-      throw new Error(`${lbl} did not mach ${l} or ${arity} did not match ${subtrees.length}`);
+      throw new Error(
+        `${JSON.stringify(lbl)} did not match ${JSON.stringify(l)} or ${arity} did not match ${subtrees.length}`
+      );
     }
   }
 }
