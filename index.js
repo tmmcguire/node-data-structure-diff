@@ -101,7 +101,7 @@ function label(obj) {
   } else if (isArray(obj)) {
     return [[], obj];
   } else /* isObject(obj) */ {
-    const entries = Object.entries(obj).sort((a, b) => a.localeCompare(b));
+    const entries = Object.entries(obj).sort((a, b) => a[0].localeCompare(b[0]));
     return [{}, entries];
   }
 }
