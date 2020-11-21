@@ -218,7 +218,7 @@ function labelsMatch(l1, l2) {
   if ((isArray(l1) && isArray(l2)) || (isObject(l1) && isObject(l2))) {
     return true;
   } else if (isPrimitive(l1) && isPrimitive(l2)) {
-    return l1 === l1 || (isNaN(l1) && isNaN(l2));
+    return l1 === l2 || (Number.isNaN(l1) && Number.isNaN(l2));
   } else {
     return false;
   }
